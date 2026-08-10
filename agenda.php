@@ -1,15 +1,29 @@
 <?php
+
 require_once 'config.php';
+
+
+/*
+    DATA SELECIONADA
+*/
 
 $dataSelecionada = $_GET['data'] ?? date('Y-m-d');
 
-$dataFormatada = date('d/m/Y', strtotime($dataSelecionada));
+$dataFormatada = date(
+    'd/m/Y',
+    strtotime($dataSelecionada)
+);
 
-$diaSemana = (int) date('N', strtotime($dataSelecionada));
+$diaSemana = (int) date(
+    'N',
+    strtotime($dataSelecionada)
+);
+
 
 /*
-    Busca os horários cadastrados para o dia da semana.
+    HORÁRIOS DO DIA
 */
+
 $stmt = $pdo->prepare("
     SELECT horario
     FROM horarios
@@ -18,46 +32,82 @@ $stmt = $pdo->prepare("
     ORDER BY horario
 ");
 
-$stmt->execute([$diaSemana]);
+$stmt->execute([
+    $diaSemana
+]);
 
 $horarios = $stmt->fetchAll();
 
+
 /*
-    Busca horários já ocupados ou aguardando aprovação.
+    HORÁRIOS JÁ OCUPADOS
 */
+
 $stmt = $pdo->prepare("
     SELECT horario_consulta
     FROM agendamentos
     WHERE data_consulta = ?
-      AND status IN ('pendente', 'aprovado', 'reagendamento')
+      AND status IN (
+          'pendente',
+          'aprovado',
+          'reagendamento'
+      )
 ");
 
-$stmt->execute([$dataSelecionada]);
+$stmt->execute([
+    $dataSelecionada
+]);
 
-$ocupados = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$ocupados = $stmt->fetchAll(
+    PDO::FETCH_COLUMN
+);
 
 
 /*
-    Busca bloqueios do dia.
+    BLOQUEIOS DO DIA
 */
+
 $stmt = $pdo->prepare("
-    SELECT horario_inicio, horario_fim, dia_inteiro
+    SELECT
+        horario_inicio,
+        horario_fim,
+        dia_inteiro
     FROM bloqueios
     WHERE data_bloqueio = ?
 ");
 
-$stmt->execute([$dataSelecionada]);
+$stmt->execute([
+    $dataSelecionada
+]);
 
 $bloqueios = $stmt->fetchAll();
 
 
-function horarioBloqueado($horario, $bloqueios)
-{
+/*
+    VERIFICA SE O HORÁRIO ESTÁ BLOQUEADO
+*/
+
+function horarioBloqueado(
+    $horario,
+    $bloqueios
+) {
+
     foreach ($bloqueios as $bloqueio) {
 
+        /*
+            Dia inteiro bloqueado
+        */
+
         if ($bloqueio['dia_inteiro']) {
+
             return true;
+
         }
+
+
+        /*
+            Período bloqueado
+        */
 
         if (
             $bloqueio['horario_inicio'] &&
@@ -65,17 +115,42 @@ function horarioBloqueado($horario, $bloqueios)
             $horario >= $bloqueio['horario_inicio'] &&
             $horario < $bloqueio['horario_fim']
         ) {
+
             return true;
+
         }
+
     }
 
     return false;
 }
 
+
+/*
+    VERIFICA SE O DIA INTEIRO ESTÁ BLOQUEADO
+*/
+
+$diaInteiroBloqueado = false;
+
+foreach ($bloqueios as $bloqueio) {
+
+    if ($bloqueio['dia_inteiro']) {
+
+        $diaInteiroBloqueado = true;
+
+        break;
+
+    }
+
+}
+
 ?>
 
+
 <!DOCTYPE html>
+
 <html lang="pt-BR">
+
 
 <head>
 
@@ -86,25 +161,43 @@ function horarioBloqueado($horario, $bloqueios)
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Agendar consulta | Dra. Caroline</title>
+    <title>
+        Agendar consulta | Dra. Caroline
+    </title>
 
-    <link rel="stylesheet" href="style.css">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 
 </head>
 
+
 <body>
+
 
 <header class="topo">
 
-    <a href="index.php" class="logo">
 
-        <span class="logo-pata">🐾</span>
+    <a
+        href="index.php"
+        class="logo"
+    >
+
+        <span class="logo-pata">
+            🐾
+        </span>
+
 
         <div>
 
-            <strong>Dra. Caroline</strong>
+            <strong>
+                Dra. Caroline
+            </strong>
 
-            <small>Atendimento Veterinário</small>
+            <small>
+                Atendimento Veterinário
+            </small>
 
         </div>
 
@@ -113,35 +206,56 @@ function horarioBloqueado($horario, $bloqueios)
 
     <nav>
 
-        <a href="index.php">Início</a>
+        <a href="index.php">
+            Início
+        </a>
 
-        <a href="index.php#sobre">Sobre</a>
+        <a href="index.php#sobre">
+            Sobre
+        </a>
 
-        <a href="login.php" class="btn-login">
+        <a
+            href="login.php"
+            class="btn-login"
+        >
             🔐 Área da Veterinária
         </a>
 
     </nav>
+
 
 </header>
 
 
 <main>
 
+
 <section class="agenda-pagina">
+
+
+    <!-- =========================
+         TÍTULO
+    ========================== -->
 
     <div class="agenda-titulo">
 
-        <span>🐾 Atendimento veterinário</span>
+        <span>
+            🐾 Atendimento veterinário
+        </span>
+
 
         <h1>
             Solicite sua consulta
         </h1>
 
+
         <p>
+
             Escolha uma data e um horário disponível.
+
             Sua solicitação ficará aguardando a confirmação
             da Dra. Caroline.
+
         </p>
 
     </div>
@@ -150,17 +264,27 @@ function horarioBloqueado($horario, $bloqueios)
     <div class="agenda-container">
 
 
-        <!-- DATA -->
+        <!-- =========================
+             DATA
+        ========================== -->
 
         <div class="agenda-data">
 
-            <h2>1. Escolha a data</h2>
+
+            <h2>
+                1. Escolha a data
+            </h2>
+
 
             <form method="GET">
 
+
                 <label for="data">
+
                     Data da consulta
+
                 </label>
+
 
                 <input
                     type="date"
@@ -171,106 +295,203 @@ function horarioBloqueado($horario, $bloqueios)
                     onchange="this.form.submit()"
                 >
 
+
             </form>
+
 
             <div class="data-escolhida">
 
-                📅 <?= $dataFormatada ?>
+                📅
+
+                <?= $dataFormatada ?>
 
             </div>
+
+
+            <?php if ($diaInteiroBloqueado): ?>
+
+                <div class="aviso-dia-bloqueado">
+
+                    🚫
+
+                    <strong>
+                        Este dia está bloqueado.
+                    </strong>
+
+                    <p>
+                        Não há atendimento disponível nesta data.
+                    </p>
+
+                </div>
+
+            <?php endif; ?>
+
 
         </div>
 
 
-        <!-- HORÁRIOS -->
+        <!-- =========================
+             HORÁRIOS
+        ========================== -->
 
         <div class="agenda-horarios">
 
-            <h2>2. Escolha o horário</h2>
+
+            <h2>
+                2. Escolha o horário
+            </h2>
+
 
             <div class="horarios-grid">
 
+
                 <?php if (!$horarios): ?>
+
 
                     <div class="sem-horarios">
 
-                        <span>😿</span>
+                        <span>
+                            😿
+                        </span>
+
 
                         <p>
-                            Não há horários configurados
+                            Não há atendimento configurado
                             para este dia.
                         </p>
 
                     </div>
 
+
                 <?php else: ?>
+
 
                     <?php foreach ($horarios as $item): ?>
 
+
                         <?php
 
-                        $horario = substr(
-                            $item['horario'],
-                            0,
-                            5
-                        );
+                        /*
+                            Horário completo
+                        */
 
-                        $ocupado = in_array(
-                            $item['horario'],
-                            $ocupados
-                        );
+                        $horarioCompleto =
+                            $item['horario'];
 
-                        $bloqueado = horarioBloqueado(
-                            $item['horario'],
-                            $bloqueios
-                        );
 
-                        $indisponivel =
-                            $ocupado ||
-                            $bloqueado;
+                        /*
+                            Horário para exibição
+                        */
+
+                        $horario =
+                            substr(
+                                $horarioCompleto,
+                                0,
+                                5
+                            );
+
+
+                        /*
+                            Verifica ocupação
+                        */
+
+                        $ocupado =
+                            in_array(
+                                $horarioCompleto,
+                                $ocupados
+                            );
+
+
+                        /*
+                            Verifica bloqueio
+                        */
+
+                        $bloqueado =
+                            horarioBloqueado(
+                                $horarioCompleto,
+                                $bloqueios
+                            );
+
+
+                        /*
+                            Indisponível
+                        */
+
+$indisponivel = false;
 
                         ?>
 
+
                         <button
                             type="button"
-                            class="horario <?= $indisponivel ? 'indisponivel' : '' ?>"
-                            <?= $indisponivel ? 'disabled' : '' ?>
-                            onclick="selecionarHorario(
-                                '<?= $horario ?>'
-                            )"
+                            class="
+                                horario
+                                <?= $indisponivel
+                                    ? 'indisponivel'
+                                    : ''
+                                ?>
+                            "
+                            <?= $indisponivel
+                                ? 'disabled'
+                                : ''
+                            ?>
+                            onclick="
+                                selecionarHorario(
+                                    '<?= $horario ?>'
+                                )
+                            "
                         >
+
 
                             <?= $horario ?>
 
+
                             <?php if ($ocupado): ?>
 
-                                <small>Ocupado</small>
+                                <small>
+                                    Ocupado
+                                </small>
+
 
                             <?php elseif ($bloqueado): ?>
 
-                                <small>Indisponível</small>
+                                <small>
+                                    Indisponível
+                                </small>
+
 
                             <?php endif; ?>
 
+
                         </button>
+
 
                     <?php endforeach; ?>
 
+
                 <?php endif; ?>
 
+
             </div>
+
 
         </div>
 
 
-        <!-- FORMULÁRIO -->
+        <!-- =========================
+             FORMULÁRIO
+        ========================== -->
 
         <div
             class="formulario-agendamento"
             id="formulario"
         >
 
-            <h2>3. Seus dados</h2>
+
+            <h2>
+                3. Seus dados
+            </h2>
+
 
             <p class="horario-selecionado">
 
@@ -289,11 +510,13 @@ function horarioBloqueado($horario, $bloqueios)
                 onsubmit="return validarAgendamento()"
             >
 
+
                 <input
                     type="hidden"
                     name="data"
                     value="<?= htmlspecialchars($dataSelecionada) ?>"
                 >
+
 
                 <input
                     type="hidden"
@@ -304,11 +527,15 @@ function horarioBloqueado($horario, $bloqueios)
 
                 <div class="form-grid">
 
+
+                    <!-- NOME -->
+
                     <div class="campo">
 
                         <label>
                             Seu nome *
                         </label>
+
 
                         <input
                             type="text"
@@ -320,11 +547,14 @@ function horarioBloqueado($horario, $bloqueios)
                     </div>
 
 
+                    <!-- TELEFONE -->
+
                     <div class="campo">
 
                         <label>
                             WhatsApp *
                         </label>
+
 
                         <input
                             type="tel"
@@ -336,11 +566,14 @@ function horarioBloqueado($horario, $bloqueios)
                     </div>
 
 
+                    <!-- EMAIL -->
+
                     <div class="campo">
 
                         <label>
                             E-mail
                         </label>
+
 
                         <input
                             type="email"
@@ -351,11 +584,14 @@ function horarioBloqueado($horario, $bloqueios)
                     </div>
 
 
+                    <!-- PET -->
+
                     <div class="campo">
 
                         <label>
                             Nome do pet *
                         </label>
+
 
                         <input
                             type="text"
@@ -367,11 +603,14 @@ function horarioBloqueado($horario, $bloqueios)
                     </div>
 
 
+                    <!-- ESPÉCIE -->
+
                     <div class="campo campo-completo">
 
                         <label>
                             Espécie *
                         </label>
+
 
                         <select
                             name="especie"
@@ -382,13 +621,16 @@ function horarioBloqueado($horario, $bloqueios)
                                 Selecione
                             </option>
 
+
                             <option value="Cachorro">
                                 🐶 Cachorro
                             </option>
 
+
                             <option value="Gato">
                                 🐱 Gato
                             </option>
+
 
                             <option value="Outro">
                                 🐾 Outro
@@ -398,42 +640,60 @@ function horarioBloqueado($horario, $bloqueios)
 
                     </div>
 
+
+                    <!-- LOCAL -->
+
                     <div class="campo campo-completo">
 
-    <label>
-        📍 Local do atendimento *
-    </label>
+                        <label>
+                            📍 Local do atendimento *
+                        </label>
 
-    <select
-        name="local"
-        required
-    >
 
-        <option value="">
-            Selecione o local
-        </option>
+                        <select
+                            name="local"
+                            required
+                        >
 
-        <option value="AMARE Hospital Veterinário - Atendimento presencial">
-            🏥 AMARE Hospital Veterinário - Atendimento presencial
-        </option>
+                            <option value="">
+                                Selecione o local
+                            </option>
 
-        <option value="Atendimento online">
-            💻 Atendimento online
-        </option>
 
-        <option value="Faros Veterinária - Unidade Pirituba">
-            🏥 Faros Veterinária - Unidade Pirituba
-        </option>
+                            <option
+                                value="AMARE Hospital Veterinário - Atendimento presencial"
+                            >
+                                🏥 AMARE Hospital Veterinário - Atendimento presencial
+                            </option>
 
-    </select>
 
-</div>
+                            <option
+                                value="Atendimento online"
+                            >
+                                💻 Atendimento online
+                            </option>
+
+
+                            <option
+                                value="Faros Veterinária - Unidade Pirituba"
+                            >
+                                🏥 Faros Veterinária - Unidade Pirituba
+                            </option>
+
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- MOTIVO -->
 
                     <div class="campo campo-completo">
 
                         <label>
                             Motivo da consulta *
                         </label>
+
 
                         <textarea
                             name="motivo"
@@ -443,6 +703,7 @@ function horarioBloqueado($horario, $bloqueios)
                         ></textarea>
 
                     </div>
+
 
                 </div>
 
@@ -459,40 +720,170 @@ function horarioBloqueado($horario, $bloqueios)
 
                 <p class="aviso-formulario">
 
-                    🔒 Seus dados serão utilizados apenas
+                    🔒
+
+                    Seus dados serão utilizados apenas
                     para o atendimento.
 
                 </p>
 
+
             </form>
+
 
         </div>
 
+
     </div>
 
+
 </section>
+
 
 </main>
 
 
 <footer>
 
+
     <div class="footer-logo">
-        🐾 <strong>Dra. Caroline</strong>
+
+        🐾
+
+        <strong>
+            Dra. Caroline
+        </strong>
+
     </div>
+
 
     <p>
         Atendimento veterinário com carinho e dedicação.
     </p>
 
+
     <span>
-        © <?= date('Y') ?> Dra. Caroline
+
+        © <?= date('Y') ?>
+
+        Dra. Caroline
+
     </span>
+
 
 </footer>
 
+<script>
 
-<script src="script.js"></script>
+function selecionarHorario(horario) {
+
+    const campoHorario =
+        document.getElementById('horario');
+
+    const horarioTexto =
+        document.getElementById('horarioTexto');
+
+    const formulario =
+        document.getElementById('formulario');
+
+
+    /*
+        Remove seleção anterior
+    */
+
+    document
+        .querySelectorAll('.horario')
+        .forEach(function(botao) {
+
+            botao.classList.remove('selecionado');
+
+        });
+
+
+    /*
+        Marca o horário clicado
+    */
+
+    document
+        .querySelectorAll('.horario')
+        .forEach(function(botao) {
+
+            if (
+                botao.textContent
+                    .trim()
+                    .startsWith(horario)
+            ) {
+
+                botao.classList.add('selecionado');
+
+            }
+
+        });
+
+
+    /*
+        Salva o horário
+    */
+
+    campoHorario.value = horario;
+
+
+    /*
+        Mostra na tela
+    */
+
+    horarioTexto.textContent = horario;
+
+
+    /*
+        Mostra formulário
+    */
+
+    formulario.style.display = 'block';
+
+
+    /*
+        Rola até o formulário
+    */
+
+    formulario.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+
+}
+
+
+function validarAgendamento() {
+
+    const horario =
+        document.getElementById('horario');
+
+
+    if (
+        !horario ||
+        !horario.value
+    ) {
+
+        alert(
+            'Escolha um horário antes de continuar.'
+        );
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+
+</script>
+
+</body>
+</html>
+
 
 </body>
 
