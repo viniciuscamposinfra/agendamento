@@ -1222,3 +1222,537 @@ footer span {
 .voltar-site:hover {
     color: var(--rosa-escuro);
 }
+/* =========================
+   PAINEL
+========================= */
+
+.painel-body {
+    background: #fff8fa;
+}
+
+
+.painel-topo {
+    min-height: 82px;
+
+    padding: 15px 6%;
+
+    background: white;
+
+    border-bottom: 1px solid var(--borda);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+
+.painel-acoes {
+    display: flex;
+
+    align-items: center;
+
+    gap: 20px;
+
+    color: var(--texto-claro);
+
+    font-size: 13px;
+}
+
+
+.btn-sair {
+    padding: 10px 16px;
+
+    border-radius: 25px;
+
+    background: var(--rosa-claro);
+
+    color: var(--rosa-escuro);
+
+    font-weight: 600;
+}
+
+
+.painel {
+    max-width: 1250px;
+
+    margin: auto;
+
+    padding: 55px 5%;
+}
+
+
+.painel-titulo {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 35px;
+}
+
+
+.painel-titulo > div > span,
+.secao-topo span {
+    color: var(--rosa-escuro);
+
+    font-size: 13px;
+
+    font-weight: 700;
+}
+
+
+.painel-titulo h1 {
+    font-family: 'Playfair Display', serif;
+
+    font-size: 42px;
+
+    margin: 5px 0;
+}
+
+
+.painel-titulo p {
+    color: var(--texto-claro);
+}
+
+
+/* CARDS */
+
+.dashboard-cards {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 18px;
+
+    margin-bottom: 35px;
+}
+
+
+.dashboard-card {
+    background: white;
+
+    border: 1px solid var(--borda);
+
+    border-radius: 20px;
+
+    padding: 23px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 16px;
+}
+
+
+.dashboard-icone {
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 15px;
+
+    background: var(--rosa-claro);
+
+    font-size: 22px;
+}
+
+
+.dashboard-card span {
+    display: block;
+
+    color: var(--texto-claro);
+
+    font-size: 12px;
+
+    margin-bottom: 5px;
+}
+
+
+.dashboard-card strong {
+    display: block;
+
+    font-size: 25px;
+
+    color: var(--texto);
+}
+
+
+/* SEÇÃO */
+
+.painel-secao {
+    background: white;
+
+    border: 1px solid var(--borda);
+
+    border-radius: 25px;
+
+    overflow: hidden;
+}
+
+
+.secao-topo {
+    padding: 25px 30px;
+
+    border-bottom: 1px solid var(--borda);
+}
+
+
+.secao-topo h2 {
+    font-family: 'Playfair Display', serif;
+
+    font-size: 28px;
+
+    margin-top: 4px;
+}
+
+
+/* SEM AGENDAMENTOS */
+
+.sem-agendamentos {
+    text-align: center;
+
+    padding: 70px 20px;
+}
+
+
+.sem-agendamentos div {
+    font-size: 50px;
+
+    margin-bottom: 10px;
+}
+
+
+.sem-agendamentos h3 {
+    margin-bottom: 8px;
+}
+
+
+.sem-agendamentos p {
+    color: var(--texto-claro);
+
+    font-size: 14px;
+}
+
+
+/* TABELA */
+
+.tabela-container {
+    overflow-x: auto;
+}
+
+
+table {
+    width: 100%;
+
+    border-collapse: collapse;
+}
+
+
+th {
+    padding: 15px 20px;
+
+    text-align: left;
+
+    font-size: 11px;
+
+    text-transform: uppercase;
+
+    color: var(--texto-claro);
+
+    background: #fffafa;
+
+    letter-spacing: 0.5px;
+}
+
+
+td {
+    padding: 18px 20px;
+
+    border-top: 1px solid #f8e8ed;
+
+    font-size: 13px;
+}
+
+
+.status {
+    display: inline-block;
+
+    padding: 6px 10px;
+
+    border-radius: 20px;
+
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+
+.status-pendente {
+    background: #fff6d9;
+
+    color: #9b7610;
+}
+
+
+.status-aprovado {
+    background: #e9f8ef;
+
+    color: #3c8757;
+}
+
+
+.status-recusado {
+    background: #ffebee;
+
+    color: #b74f62;
+}
+
+
+.status-reagendamento {
+    background: #eeeafd;
+
+    color: #6556a7;
+}
+
+
+.status-cancelado {
+    background: #eeeeee;
+
+    color: #777;
+}
+
+
+.btn-acao {
+    color: var(--rosa-escuro);
+
+    font-weight: 700;
+
+    font-size: 12px;
+}
+
+
+/* CELULAR */
+
+@media (max-width: 900px) {
+
+    .dashboard-cards {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 650px) {
+
+    .painel-topo {
+        padding: 15px 5%;
+    }
+
+
+    .painel-acoes > span {
+        display: none;
+    }
+
+
+    .painel-titulo {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 20px;
+    }
+
+
+    .dashboard-cards {
+        grid-template-columns: 1fr;
+    }
+
+
+    .painel {
+        padding: 35px 5%;
+    }
+
+}
+/* =========================
+   BLOQUEIO DE AGENDA
+========================= */
+
+.bloqueio-secao {
+    margin-bottom: 25px;
+}
+
+
+.secao-topo p {
+    margin-top: 8px;
+
+    color: var(--texto-claro);
+
+    font-size: 13px;
+}
+
+
+.bloqueio-conteudo {
+    padding: 30px;
+}
+
+
+.form-bloqueio {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 18px;
+
+    padding-bottom: 30px;
+
+    border-bottom: 1px solid var(--borda);
+}
+
+
+.form-bloqueio .campo-motivo {
+    grid-column: 1 / -1;
+}
+
+
+.form-bloqueio > button {
+    justify-self: start;
+
+    border: none;
+
+    cursor: pointer;
+
+    font-family: inherit;
+}
+
+
+.horarios-bloqueio {
+    display: none;
+
+    grid-column: 1 / -1;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 18px;
+}
+
+
+.bloqueios-lista {
+    margin-top: 30px;
+}
+
+
+.bloqueios-lista h3 {
+    font-size: 16px;
+
+    margin-bottom: 15px;
+}
+
+
+.sem-bloqueios {
+    padding: 25px;
+
+    background: var(--rosa-claro);
+
+    border-radius: 15px;
+
+    text-align: center;
+
+    color: var(--texto-claro);
+}
+
+
+.sem-bloqueios span {
+    display: block;
+
+    font-size: 30px;
+
+    margin-bottom: 5px;
+}
+
+
+.bloqueio-item {
+    display: grid;
+
+    grid-template-columns:
+        180px 1fr auto;
+
+    align-items: center;
+
+    gap: 20px;
+
+    padding: 16px;
+
+    margin-bottom: 10px;
+
+    border: 1px solid var(--borda);
+
+    border-radius: 15px;
+
+    background: #fffafa;
+}
+
+
+.bloqueio-data strong {
+    display: block;
+
+    margin-bottom: 4px;
+}
+
+
+.bloqueio-data span {
+    color: var(--rosa-escuro);
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+
+.bloqueio-motivo {
+    color: var(--texto-claro);
+
+    font-size: 13px;
+}
+
+
+.btn-remover {
+    color: #b74f62;
+
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+
+@media (max-width: 700px) {
+
+    .form-bloqueio {
+        grid-template-columns: 1fr;
+    }
+
+    .form-bloqueio .campo-motivo {
+        grid-column: auto;
+    }
+
+    .horarios-bloqueio {
+        grid-template-columns: 1fr;
+    }
+
+    .bloqueio-item {
+        grid-template-columns: 1fr;
+
+        gap: 8px;
+    }
+
+}
