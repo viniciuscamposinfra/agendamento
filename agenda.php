@@ -398,6 +398,36 @@ function horarioBloqueado($horario, $bloqueios)
 
                     </div>
 
+                    <div class="campo campo-completo">
+
+    <label>
+        📍 Local do atendimento *
+    </label>
+
+    <select
+        name="local"
+        required
+    >
+
+        <option value="">
+            Selecione o local
+        </option>
+
+        <option value="AMARE Hospital Veterinário - Atendimento presencial">
+            🏥 AMARE Hospital Veterinário - Atendimento presencial
+        </option>
+
+        <option value="Atendimento online">
+            💻 Atendimento online
+        </option>
+
+        <option value="Faros Veterinária - Unidade Pirituba">
+            🏥 Faros Veterinária - Unidade Pirituba
+        </option>
+
+    </select>
+
+</div>
 
                     <div class="campo campo-completo">
 
