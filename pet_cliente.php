@@ -97,6 +97,26 @@ $stmt->execute([$petId]);
 
 $exames = $stmt->fetchAll();
 
+/*
+    BUSCAR RECEITAS
+*/
+
+$stmt = $pdo->prepare("
+    SELECT
+        id,
+        data_receita,
+        titulo,
+        medicamentos,
+        observacoes,
+        arquivo_pdf
+    FROM receitas
+    WHERE pet_id = ?
+    ORDER BY data_receita DESC, id DESC
+");
+
+$stmt->execute([$petId]);
+
+$receitas = $stmt->fetchAll();
 
 /*
     ÍCONE DO PET
@@ -903,54 +923,186 @@ if ($pet['especie'] === 'Gato') {
     </section>
 
 
-    <!-- PRÓXIMOS MÓDULOS -->
+    <!-- RECEITAS -->
 
-    <section class="dashboard-cards">
+<section class="painel-secao">
+
+    <div class="secao-topo">
+
+        <span>
+            Prescrições
+        </span>
+
+        <h2>
+            Receitas
+        </h2>
+
+        <p>
+            Receitas disponibilizadas pela Dra. Caroline.
+        </p>
+
+    </div>
 
 
-        <div class="dashboard-card">
+    <?php if (!$receitas): ?>
 
-            <div class="dashboard-icone">
-                📎
-            </div>
+        <div class="sem-agendamentos">
 
             <div>
-
-                <span>
-                    Exames e documentos
-                </span>
-
-                <strong>
-                    Disponível acima
-                </strong>
-
-            </div>
-
-        </div>
-
-
-        <div class="dashboard-card">
-
-            <div class="dashboard-icone">
                 💊
             </div>
 
-            <div>
+            <h3>
+                Nenhuma receita disponível
+            </h3>
 
-                <span>
-                    Receitas
-                </span>
-
-                <strong>
-                    Em breve
-                </strong>
-
-            </div>
+            <p>
+                Ainda não existem receitas disponibilizadas
+                para este pet.
+            </p>
 
         </div>
 
 
-    </section>
+    <?php else: ?>
+
+
+        <?php foreach ($receitas as $receita): ?>
+
+            <div
+                style="
+                    background:#fff;
+                    border:1px solid #eee;
+                    border-radius:14px;
+                    padding:20px;
+                    margin-bottom:15px;
+                "
+            >
+
+                <div
+                    style="
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:center;
+                        gap:20px;
+                    "
+                >
+
+                    <div>
+
+                        <h3 style="margin-top:0;">
+
+                            💊
+
+                            <?= htmlspecialchars(
+                                $receita['titulo']
+                            ) ?>
+
+                        </h3>
+
+
+                        <p>
+
+                            📅
+
+                            <?= date(
+                                'd/m/Y',
+                                strtotime(
+                                    $receita['data_receita']
+                                )
+                            ) ?>
+
+                        </p>
+
+                    </div>
+
+
+                    <?php if (
+                        !empty(
+                            $receita['arquivo_pdf']
+                        )
+                    ): ?>
+
+                        <a
+                            href="uploads/receitas/<?= rawurlencode(
+                                $receita['arquivo_pdf']
+                            ) ?>"
+                            target="_blank"
+                            class="btn-acao"
+                        >
+                            Visualizar PDF
+                        </a>
+
+                    <?php endif; ?>
+
+                </div>
+
+
+                <div
+                    style="
+                        margin-top:15px;
+                        padding-top:15px;
+                        border-top:1px solid #eee;
+                    "
+                >
+
+                    <strong>
+                        Medicamentos e instruções
+                    </strong>
+
+                    <p>
+
+                        <?= nl2br(
+                            htmlspecialchars(
+                                $receita['medicamentos']
+                            )
+                        ) ?>
+
+                    </p>
+
+                </div>
+
+
+                <?php if (
+                    !empty(
+                        $receita['observacoes']
+                    )
+                ): ?>
+
+                    <div
+                        style="
+                            margin-top:15px;
+                        "
+                    >
+
+                        <strong>
+                            Orientações
+                        </strong>
+
+                        <p>
+
+                            <?= nl2br(
+                                htmlspecialchars(
+                                    $receita['observacoes']
+                                )
+                            ) ?>
+
+                        </p>
+
+                    </div>
+
+                <?php endif; ?>
+
+
+            </div>
+
+        <?php endforeach; ?>
+
+
+    <?php endif; ?>
+
+
+</section>
 
 
 </main>
