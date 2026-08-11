@@ -103,13 +103,18 @@ $anoCalendario = isset($_GET['ano'])
 
 
 if ($mesCalendario < 1) {
+
     $mesCalendario = 12;
     $anoCalendario--;
+
 }
 
+
 if ($mesCalendario > 12) {
+
     $mesCalendario = 1;
     $anoCalendario++;
+
 }
 
 
@@ -122,10 +127,12 @@ $primeiroDia = mktime(
     $anoCalendario
 );
 
+
 $ultimoDia = (int) date(
     't',
     $primeiroDia
 );
+
 
 $diaSemanaInicio = (int) date(
     'N',
@@ -134,6 +141,7 @@ $diaSemanaInicio = (int) date(
 
 
 $nomeMeses = [
+
     1 => 'Janeiro',
     2 => 'Fevereiro',
     3 => 'Março',
@@ -146,12 +154,16 @@ $nomeMeses = [
     10 => 'Outubro',
     11 => 'Novembro',
     12 => 'Dezembro'
+
 ];
+
 
 $nomeMes = $nomeMeses[$mesCalendario];
 
 
-/* Datas do mês */
+/* =========================
+   DATAS DO MÊS
+========================= */
 
 $inicioMes = sprintf(
     '%04d-%02d-01',
@@ -159,13 +171,16 @@ $inicioMes = sprintf(
     $mesCalendario
 );
 
+
 $fimMes = date(
     'Y-m-t',
     $primeiroDia
 );
 
 
-/* Consultas do mês */
+/* =========================
+   CONSULTAS DO MÊS
+========================= */
 
 $stmt = $pdo->prepare("
     SELECT
@@ -176,25 +191,34 @@ $stmt = $pdo->prepare("
 ");
 
 $stmt->execute([
+
     $inicioMes,
     $fimMes
+
 ]);
 
+
 $consultasCalendario = [];
+
 
 foreach ($stmt->fetchAll() as $consulta) {
 
     $dia = (int) date(
         'j',
-        strtotime($consulta['data_consulta'])
+        strtotime(
+            $consulta['data_consulta']
+        )
     );
 
     $consultasCalendario[$dia][] =
         $consulta['status'];
+
 }
 
 
-/* Bloqueios do mês */
+/* =========================
+   BLOQUEIOS DO MÊS
+========================= */
 
 $stmt = $pdo->prepare("
     SELECT
@@ -207,21 +231,28 @@ $stmt = $pdo->prepare("
 ");
 
 $stmt->execute([
+
     $inicioMes,
     $fimMes
+
 ]);
 
+
 $bloqueiosCalendario = [];
+
 
 foreach ($stmt->fetchAll() as $bloqueio) {
 
     $dia = (int) date(
         'j',
-        strtotime($bloqueio['data_bloqueio'])
+        strtotime(
+            $bloqueio['data_bloqueio']
+        )
     );
 
     $bloqueiosCalendario[$dia][] =
         $bloqueio;
+
 }
 
 
@@ -232,18 +263,24 @@ foreach ($stmt->fetchAll() as $bloqueio) {
 $mesAnterior = $mesCalendario - 1;
 $anoAnterior = $anoCalendario;
 
+
 if ($mesAnterior < 1) {
+
     $mesAnterior = 12;
     $anoAnterior--;
+
 }
 
 
 $mesProximo = $mesCalendario + 1;
 $anoProximo = $anoCalendario;
 
+
 if ($mesProximo > 12) {
+
     $mesProximo = 1;
     $anoProximo++;
+
 }
 
 ?>
@@ -261,9 +298,14 @@ if ($mesProximo > 12) {
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Painel | Dra. Caroline</title>
+    <title>
+        Painel | Dra. Caroline
+    </title>
 
-    <link rel="stylesheet" href="style.css">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 
 </head>
 
@@ -273,7 +315,10 @@ if ($mesProximo > 12) {
 
 <header class="painel-topo">
 
-    <a href="index.php" class="logo">
+    <a
+        href="index.php"
+        class="logo"
+    >
 
         <span class="logo-pata">
             🐾
@@ -297,9 +342,15 @@ if ($mesProximo > 12) {
     <div class="painel-acoes">
 
         <span>
+
             Olá,
-            <?= htmlspecialchars($_SESSION['usuario_nome']) ?>
+
+            <?= htmlspecialchars(
+                $_SESSION['usuario_nome']
+            ) ?>
+
             👋
+
         </span>
 
 
@@ -307,7 +358,9 @@ if ($mesProximo > 12) {
             href="logout.php"
             class="btn-sair"
         >
+
             🚪 Sair
+
         </a>
 
     </div>
@@ -331,11 +384,11 @@ if ($mesProximo > 12) {
             </span>
 
             <h1>
-                Sua agenda
+                Painel da veterinária
             </h1>
 
             <p>
-                Gerencie suas consultas e horários.
+                Gerencie consultas, clientes, pets e atendimentos.
             </p>
 
         </div>
@@ -346,14 +399,209 @@ if ($mesProximo > 12) {
             target="_blank"
             class="btn-principal"
         >
+
             👁 Ver agenda pública
+
         </a>
 
     </div>
 
 
     <!-- =========================
-         CARDS
+         GESTÃO DO ATENDIMENTO
+    ========================== -->
+
+    <section class="painel-secao">
+
+        <div class="secao-topo">
+
+            <span>
+                🩺 Administração
+            </span>
+
+            <h2>
+                Gestão do atendimento
+            </h2>
+
+            <p>
+                Acesse rapidamente todas as áreas do sistema.
+            </p>
+
+        </div>
+
+
+        <div class="dashboard-cards">
+
+
+            <!-- CLIENTES -->
+
+            <a
+                href="clientes.php"
+                class="dashboard-card"
+                style="text-decoration:none;"
+            >
+
+                <div class="dashboard-icone">
+                    👥
+                </div>
+
+                <div>
+
+                    <span>
+                        Clientes
+                    </span>
+
+                    <strong>
+                        Gerenciar →
+                    </strong>
+
+                </div>
+
+            </a>
+
+
+            <!-- PETS -->
+
+            <a
+                href="pets.php"
+                class="dashboard-card"
+                style="text-decoration:none;"
+            >
+
+                <div class="dashboard-icone">
+                    🐾
+                </div>
+
+                <div>
+
+                    <span>
+                        Pets
+                    </span>
+
+                    <strong>
+                        Cadastrar / Ver →
+                    </strong>
+
+                </div>
+
+            </a>
+
+
+            <!-- ATENDIMENTOS -->
+
+            <a
+                href="consulta.php"
+                class="dashboard-card"
+                style="text-decoration:none;"
+            >
+
+                <div class="dashboard-icone">
+                    🩺
+                </div>
+
+                <div>
+
+                    <span>
+                        Atendimentos
+                    </span>
+
+                    <strong>
+                        Registrar →
+                    </strong>
+
+                </div>
+
+            </a>
+
+
+            <!-- EXAMES -->
+
+            <a
+                href="arquivos.php"
+                class="dashboard-card"
+                style="text-decoration:none;"
+            >
+
+                <div class="dashboard-icone">
+                    📎
+                </div>
+
+                <div>
+
+                    <span>
+                        Exames
+                    </span>
+
+                    <strong>
+                        Gerenciar →
+                    </strong>
+
+                </div>
+
+            </a>
+
+
+            <!-- RECEITAS -->
+
+            <a
+    href="receitas.php"
+    class="dashboard-card"
+    style="text-decoration:none;"
+>
+
+                <div class="dashboard-icone">
+                    💊
+                </div>
+
+                <div>
+
+                    <span>
+                        Receitas
+                    </span>
+
+                    <strong>
+                        Nova receita →
+                    </strong>
+
+                </div>
+
+            </a>
+
+
+            <!-- SOLICITAÇÕES -->
+
+            <a
+                href="solicitacoes.php"
+                class="dashboard-card"
+                style="text-decoration:none;"
+            >
+
+                <div class="dashboard-icone">
+                    📋
+                </div>
+
+                <div>
+
+                    <span>
+                        Solicitações
+                    </span>
+
+                    <strong>
+                        Ver solicitações →
+                    </strong>
+
+                </div>
+
+            </a>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         CARDS DA AGENDA
     ========================== -->
 
     <section class="dashboard-cards">
@@ -576,7 +824,9 @@ if ($mesProximo > 12) {
                     type="submit"
                     class="btn-principal"
                 >
+
                     🚫 Bloquear agenda
+
                 </button>
 
             </form>
@@ -609,7 +859,11 @@ if ($mesProximo > 12) {
                 <?php else: ?>
 
 
-                    <?php foreach ($bloqueios as $bloqueio): ?>
+                    <?php foreach (
+                        $bloqueios
+                        as $bloqueio
+                    ): ?>
+
 
                         <div class="bloqueio-item">
 
@@ -621,14 +875,18 @@ if ($mesProximo > 12) {
                                     <?= date(
                                         'd/m/Y',
                                         strtotime(
-                                            $bloqueio['data_bloqueio']
+                                            $bloqueio[
+                                                'data_bloqueio'
+                                            ]
                                         )
                                     ) ?>
 
                                 </strong>
 
 
-                                <?php if ($bloqueio['dia_inteiro']): ?>
+                                <?php if (
+                                    $bloqueio['dia_inteiro']
+                                ): ?>
 
                                     <span>
                                         🚫 Dia inteiro
@@ -641,7 +899,9 @@ if ($mesProximo > 12) {
                                         🕐
 
                                         <?= substr(
-                                            $bloqueio['horario_inicio'],
+                                            $bloqueio[
+                                                'horario_inicio'
+                                            ],
                                             0,
                                             5
                                         ) ?>
@@ -649,7 +909,9 @@ if ($mesProximo > 12) {
                                         até
 
                                         <?= substr(
-                                            $bloqueio['horario_fim'],
+                                            $bloqueio[
+                                                'horario_fim'
+                                            ],
                                             0,
                                             5
                                         ) ?>
@@ -678,7 +940,9 @@ if ($mesProximo > 12) {
                                     'Deseja remover este bloqueio?'
                                 )"
                             >
+
                                 🗑️ Remover
+
                             </a>
 
 
@@ -779,13 +1043,17 @@ if ($mesProximo > 12) {
                     <tbody>
 
 
-                        <?php foreach ($agendamentos as $agendamento): ?>
+                        <?php foreach (
+                            $agendamentos
+                            as $agendamento
+                        ): ?>
 
 
                             <?php
 
                             $status =
                                 $agendamento['status'];
+
 
                             $statusTexto = [
 
@@ -870,11 +1138,12 @@ if ($mesProximo > 12) {
                                 <td>
 
                                     <span
-                                        class="
-                                            status
-                                            status-<?= $status ?>
-                                        "
-                                    >
+    class="
+        status
+        status-<?= htmlspecialchars(
+            $status
+        ) ?>"
+>
 
                                         <?= $statusTexto[
                                             $status
@@ -891,7 +1160,9 @@ if ($mesProximo > 12) {
                                         href="#"
                                         class="btn-acao"
                                     >
+
                                         Ver
+
                                     </a>
 
                                 </td>
@@ -945,13 +1216,18 @@ if ($mesProximo > 12) {
                     href="?mes=<?= $mesAnterior ?>&ano=<?= $anoAnterior ?>"
                     class="btn-mes"
                 >
+
                     ‹
+
                 </a>
 
 
                 <strong>
+
                     <?= $nomeMes ?>
+
                     <?= $anoCalendario ?>
+
                 </strong>
 
 
@@ -959,7 +1235,9 @@ if ($mesProximo > 12) {
                     href="?mes=<?= $mesProximo ?>&ano=<?= $anoProximo ?>"
                     class="btn-mes"
                 >
+
                     ›
+
                 </a>
 
 
@@ -1005,10 +1283,6 @@ if ($mesProximo > 12) {
 
 
                 <?php
-
-                /*
-                    Espaços antes do primeiro dia
-                */
 
                 for (
                     $i = 1;
@@ -1069,6 +1343,7 @@ if ($mesProximo > 12) {
                             $diaBloqueado = true;
 
                             break;
+
                         }
 
                     }
@@ -1129,7 +1404,9 @@ if ($mesProximo > 12) {
                                     class="indicador bloqueado"
                                     title="Dia bloqueado"
                                 >
+
                                     🚫
+
                                 </span>
 
                             <?php endif; ?>
@@ -1141,7 +1418,9 @@ if ($mesProximo > 12) {
                                     class="indicador aprovado"
                                     title="Consulta aprovada"
                                 >
+
                                     🟢
+
                                 </span>
 
                             <?php endif; ?>
@@ -1153,7 +1432,9 @@ if ($mesProximo > 12) {
                                     class="indicador pendente"
                                     title="Consulta pendente"
                                 >
+
                                     🟡
+
                                 </span>
 
                             <?php endif; ?>

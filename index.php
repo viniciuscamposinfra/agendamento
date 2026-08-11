@@ -30,6 +30,9 @@ require_once 'config.php';
         <a href="#sobre">Sobre</a>
         <a href="#atendimento">Atendimento</a>
         <a href="login.php" class="btn-login">🔐 Área da Veterinária</a>
+        <a href="cliente_login.php">
+    👤 Área do Cliente
+</a>
     </nav>
 
 </header>
