@@ -12,9 +12,17 @@ if ($clienteId <= 0) {
     exit;
 }
 
-// Busca cliente
+
+// ============================
+// BUSCA CLIENTE
+// ============================
+
 $stmt = $pdo->prepare("
-    SELECT id, nome, telefone, email
+    SELECT
+        id,
+        nome,
+        telefone,
+        email
     FROM clientes
     WHERE id = ?
 ");
@@ -27,7 +35,11 @@ if (!$cliente) {
     die('Cliente não encontrado.');
 }
 
-// Busca pets
+
+// ============================
+// BUSCA PETS
+// ============================
+
 $stmt = $pdo->prepare("
     SELECT
         id,
@@ -49,6 +61,7 @@ $pets = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 
 <head>
@@ -71,7 +84,9 @@ $pets = $stmt->fetchAll();
 
 </head>
 
+
 <body class="painel-body">
+
 
 <header class="painel-topo">
 
@@ -98,6 +113,7 @@ $pets = $stmt->fetchAll();
 
     </a>
 
+
     <div class="painel-acoes">
 
         <a
@@ -115,6 +131,8 @@ $pets = $stmt->fetchAll();
 <main class="painel">
 
 
+    <!-- CABEÇALHO -->
+
     <div class="painel-titulo">
 
         <div>
@@ -128,12 +146,25 @@ $pets = $stmt->fetchAll();
             </h1>
 
             <p>
-                <?= htmlspecialchars($cliente['telefone']) ?>
-                ·
-                <?= htmlspecialchars($cliente['email']) ?>
+
+                <?= htmlspecialchars(
+                    $cliente['telefone']
+                ) ?>
+
+                <?php if ($cliente['email']): ?>
+
+                    ·
+
+                    <?= htmlspecialchars(
+                        $cliente['email']
+                    ) ?>
+
+                <?php endif; ?>
+
             </p>
 
         </div>
+
 
         <a
             href="pet.php?cliente_id=<?= $cliente['id'] ?>"
@@ -145,7 +176,10 @@ $pets = $stmt->fetchAll();
     </div>
 
 
+    <!-- PETS -->
+
     <section class="painel-secao">
+
 
         <div class="secao-topo">
 
@@ -161,6 +195,7 @@ $pets = $stmt->fetchAll();
 
 
         <?php if (!$pets): ?>
+
 
             <div class="sem-agendamentos">
 
@@ -187,7 +222,9 @@ $pets = $stmt->fetchAll();
 
             </div>
 
+
         <?php else: ?>
+
 
             <div class="tabela-container">
 
@@ -197,53 +234,106 @@ $pets = $stmt->fetchAll();
 
                         <tr>
 
-                            <th>Pet</th>
-                            <th>Espécie</th>
-                            <th>Raça</th>
-                            <th>Sexo</th>
-                            <th>Peso</th>
-                            <th>Ação</th>
+                            <th>
+                                Pet
+                            </th>
+
+                            <th>
+                                Espécie
+                            </th>
+
+                            <th>
+                                Raça
+                            </th>
+
+                            <th>
+                                Sexo
+                            </th>
+
+                            <th>
+                                Peso
+                            </th>
+
+                            <th>
+                                Ações
+                            </th>
 
                         </tr>
 
                     </thead>
 
+
                     <tbody>
+
 
                         <?php foreach ($pets as $pet): ?>
 
+
                             <tr>
+
 
                                 <td>
 
-                                    🐾
+                                    <?php
+
+                                    if ($pet['especie'] === 'Gato') {
+                                        echo '🐱';
+                                    } elseif ($pet['especie'] === 'Cachorro') {
+                                        echo '🐶';
+                                    } else {
+                                        echo '🐾';
+                                    }
+
+                                    ?>
+
                                     <strong>
-                                        <?= htmlspecialchars($pet['nome']) ?>
+
+                                        <?= htmlspecialchars(
+                                            $pet['nome']
+                                        ) ?>
+
                                     </strong>
 
                                 </td>
 
-                                <td>
-                                    <?= htmlspecialchars($pet['especie']) ?>
-                                </td>
 
                                 <td>
+
+                                    <?= htmlspecialchars(
+                                        $pet['especie']
+                                    ) ?>
+
+                                </td>
+
+
+                                <td>
+
                                     <?= htmlspecialchars(
                                         $pet['raca'] ?: '-'
                                     ) ?>
+
                                 </td>
 
+
                                 <td>
+
                                     <?= htmlspecialchars(
                                         $pet['sexo'] ?: '-'
                                     ) ?>
+
                                 </td>
 
+
                                 <td>
+
                                     <?= $pet['peso']
-                                        ? htmlspecialchars($pet['peso']) . ' kg'
+                                        ? htmlspecialchars(
+                                            $pet['peso']
+                                        ) . ' kg'
                                         : '-' ?>
+
                                 </td>
+
 
                                 <td>
 
@@ -251,14 +341,39 @@ $pets = $stmt->fetchAll();
                                         href="pet.php?id=<?= $pet['id'] ?>&cliente_id=<?= $cliente['id'] ?>"
                                         class="btn-acao"
                                     >
-                                        Ver
+                                        ✏️ Editar
+                                    </a>
+
+
+                                    <a
+                                        href="historico.php?pet_id=<?= $pet['id'] ?>"
+                                        class="btn-acao"
+                                        style="
+                                            margin-left:5px;
+                                        "
+                                    >
+                                        🩺 Histórico
+                                    </a>
+
+
+                                    <a
+                                        href="exames.php?pet_id=<?= $pet['id'] ?>"
+                                        class="btn-acao"
+                                        style="
+                                            margin-left:5px;
+                                        "
+                                    >
+                                        📎 Exames
                                     </a>
 
                                 </td>
 
+
                             </tr>
 
+
                         <?php endforeach; ?>
+
 
                     </tbody>
 
@@ -266,12 +381,15 @@ $pets = $stmt->fetchAll();
 
             </div>
 
+
         <?php endif; ?>
+
 
     </section>
 
 
 </main>
+
 
 </body>
 
