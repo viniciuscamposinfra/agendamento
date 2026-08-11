@@ -6,9 +6,9 @@ require_once __DIR__ . '/funcoes.php';
 exigirLogin();
 
 
-/* =========================
-   CARDS
-========================= */
+// =========================
+// CARDS
+// =========================
 
 $stmt = $pdo->query("
     SELECT COUNT(*) AS total
@@ -45,9 +45,51 @@ $stmt = $pdo->query("
 $totalBloqueios = $stmt->fetch()['total'];
 
 
-/* =========================
-   PRÓXIMOS AGENDAMENTOS
-========================= */
+// =========================
+// FINANCEIRO
+// =========================
+
+$stmt = $pdo->query("
+    SELECT
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN status_pagamento = 'pago'
+                    THEN valor_consulta
+                    ELSE 0
+                END
+            ),
+            0
+        ) AS total_recebido,
+
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN status_pagamento = 'pendente'
+                    THEN valor_consulta
+                    ELSE 0
+                END
+            ),
+            0
+        ) AS total_pendente
+
+    FROM agendamentos
+");
+
+$financeiro = $stmt->fetch();
+
+$totalRecebido = (float) (
+    $financeiro['total_recebido'] ?? 0
+);
+
+$totalFinanceiroPendente = (float) (
+    $financeiro['total_pendente'] ?? 0
+);
+
+
+// =========================
+// PRÓXIMOS AGENDAMENTOS
+// =========================
 
 $stmt = $pdo->query("
     SELECT
@@ -59,7 +101,10 @@ $stmt = $pdo->query("
         motivo,
         data_consulta,
         horario_consulta,
-        status
+        status,
+        valor_consulta,
+        status_pagamento,
+        data_pagamento
     FROM agendamentos
     WHERE data_consulta >= CURDATE()
     ORDER BY data_consulta ASC, horario_consulta ASC
@@ -69,9 +114,9 @@ $stmt = $pdo->query("
 $agendamentos = $stmt->fetchAll();
 
 
-/* =========================
-   BLOQUEIOS FUTUROS
-========================= */
+// =========================
+// BLOQUEIOS FUTUROS
+// =========================
 
 $stmt = $pdo->query("
     SELECT
@@ -89,9 +134,9 @@ $stmt = $pdo->query("
 $bloqueios = $stmt->fetchAll();
 
 
-/* =========================
-   CALENDÁRIO
-========================= */
+// =========================
+// CALENDÁRIO
+// =========================
 
 $mesCalendario = isset($_GET['mes'])
     ? (int) $_GET['mes']
@@ -161,9 +206,9 @@ $nomeMeses = [
 $nomeMes = $nomeMeses[$mesCalendario];
 
 
-/* =========================
-   DATAS DO MÊS
-========================= */
+// =========================
+// DATAS DO MÊS
+// =========================
 
 $inicioMes = sprintf(
     '%04d-%02d-01',
@@ -178,9 +223,9 @@ $fimMes = date(
 );
 
 
-/* =========================
-   CONSULTAS DO MÊS
-========================= */
+// =========================
+// CONSULTAS DO MÊS
+// =========================
 
 $stmt = $pdo->prepare("
     SELECT
@@ -216,9 +261,9 @@ foreach ($stmt->fetchAll() as $consulta) {
 }
 
 
-/* =========================
-   BLOQUEIOS DO MÊS
-========================= */
+// =========================
+// BLOQUEIOS DO MÊS
+// =========================
 
 $stmt = $pdo->prepare("
     SELECT
@@ -256,9 +301,9 @@ foreach ($stmt->fetchAll() as $bloqueio) {
 }
 
 
-/* =========================
-   NAVEGAÇÃO DO CALENDÁRIO
-========================= */
+// =========================
+// NAVEGAÇÃO DO CALENDÁRIO
+// =========================
 
 $mesAnterior = $mesCalendario - 1;
 $anoAnterior = $anoCalendario;
@@ -433,8 +478,6 @@ if ($mesProximo > 12) {
         <div class="dashboard-cards">
 
 
-            <!-- CLIENTES -->
-
             <a
                 href="clientes.php"
                 class="dashboard-card"
@@ -459,8 +502,6 @@ if ($mesProximo > 12) {
 
             </a>
 
-
-            <!-- PETS -->
 
             <a
                 href="pets.php"
@@ -487,8 +528,6 @@ if ($mesProximo > 12) {
             </a>
 
 
-            <!-- ATENDIMENTOS -->
-
             <a
                 href="consulta.php"
                 class="dashboard-card"
@@ -513,8 +552,6 @@ if ($mesProximo > 12) {
 
             </a>
 
-
-            <!-- EXAMES -->
 
             <a
                 href="arquivos.php"
@@ -541,13 +578,11 @@ if ($mesProximo > 12) {
             </a>
 
 
-            <!-- RECEITAS -->
-
             <a
-    href="receitas.php"
-    class="dashboard-card"
-    style="text-decoration:none;"
->
+                href="receitas.php"
+                class="dashboard-card"
+                style="text-decoration:none;"
+            >
 
                 <div class="dashboard-icone">
                     💊
@@ -560,15 +595,13 @@ if ($mesProximo > 12) {
                     </span>
 
                     <strong>
-                        Nova receita →
+                        Gerenciar →
                     </strong>
 
                 </div>
 
             </a>
 
-
-            <!-- SOLICITAÇÕES -->
 
             <a
                 href="solicitacoes.php"
@@ -684,6 +717,76 @@ if ($mesProximo > 12) {
 
                 <strong>
                     <?= $totalBloqueios ?>
+                </strong>
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =========================
+         FINANCEIRO
+    ========================== -->
+
+    <section class="dashboard-cards">
+
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-icone">
+                💰
+            </div>
+
+            <div>
+
+                <span>
+                    Total recebido
+                </span>
+
+                <strong>
+
+                    R$
+
+                    <?= number_format(
+                        $totalRecebido,
+                        2,
+                        ',',
+                        '.'
+                    ) ?>
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-icone">
+                🟡
+            </div>
+
+            <div>
+
+                <span>
+                    Total pendente
+                </span>
+
+                <strong>
+
+                    R$
+
+                    <?= number_format(
+                        $totalFinanceiroPendente,
+                        2,
+                        ',',
+                        '.'
+                    ) ?>
+
                 </strong>
 
             </div>
@@ -832,8 +935,6 @@ if ($mesProximo > 12) {
             </form>
 
 
-            <!-- BLOQUEIOS EXISTENTES -->
-
             <div class="bloqueios-lista">
 
                 <h3>
@@ -948,12 +1049,15 @@ if ($mesProximo > 12) {
 
                         </div>
 
+
                     <?php endforeach; ?>
 
 
                 <?php endif; ?>
 
+
             </div>
+
 
         </div>
 
@@ -1029,6 +1133,10 @@ if ($mesProximo > 12) {
 
                             <th>
                                 Status
+                            </th>
+
+                            <th>
+                                Pagamento
                             </th>
 
                             <th>
@@ -1138,12 +1246,12 @@ if ($mesProximo > 12) {
                                 <td>
 
                                     <span
-    class="
-        status
-        status-<?= htmlspecialchars(
-            $status
-        ) ?>"
->
+                                        class="
+                                            status
+                                            status-<?= htmlspecialchars(
+                                                $status
+                                            ) ?>"
+                                    >
 
                                         <?= $statusTexto[
                                             $status
@@ -1154,18 +1262,167 @@ if ($mesProximo > 12) {
                                 </td>
 
 
+                                <!-- PAGAMENTO -->
+
                                 <td>
 
-                                    <a
-                                        href="#"
-                                        class="btn-acao"
-                                    >
+                                    <?php if (
+                                        $agendamento[
+                                            'status_pagamento'
+                                        ] === 'pago'
+                                    ): ?>
 
-                                        Ver
 
-                                    </a>
+                                        <span
+                                            class="
+                                                status
+                                                status-aprovado
+                                            "
+                                        >
+
+                                            🟢 Pago
+
+                                        </span>
+
+
+                                        <?php if (
+                                            $agendamento[
+                                                'valor_consulta'
+                                            ] !== null
+                                        ): ?>
+
+                                            <small
+                                                style="
+                                                    display:block;
+                                                    margin-top:5px;
+                                                "
+                                            >
+
+                                                R$
+
+                                                <?= number_format(
+                                                    $agendamento[
+                                                        'valor_consulta'
+                                                    ],
+                                                    2,
+                                                    ',',
+                                                    '.'
+                                                ) ?>
+
+                                            </small>
+
+                                        <?php endif; ?>
+
+
+                                        <?php if (
+                                            $agendamento[
+                                                'data_pagamento'
+                                            ]
+                                        ): ?>
+
+                                            <small
+                                                style="
+                                                    display:block;
+                                                    margin-top:5px;
+                                                "
+                                            >
+
+                                                Pago em
+
+                                                <?= date(
+                                                    'd/m/Y',
+                                                    strtotime(
+                                                        $agendamento[
+                                                            'data_pagamento'
+                                                        ]
+                                                    )
+                                                ) ?>
+
+                                            </small>
+
+                                        <?php endif; ?>
+
+
+                                    <?php else: ?>
+
+
+                                        <form
+                                            action="marcar_pagamento.php"
+                                            method="POST"
+                                            style="margin:0;"
+                                        >
+
+
+                                            <input
+                                                type="hidden"
+                                                name="id"
+                                                value="<?= $agendamento['id'] ?>"
+                                            >
+
+
+                                            <input
+                                                type="number"
+                                                name="valor"
+                                                step="0.01"
+                                                min="0"
+                                                placeholder="Valor"
+                                                value="<?= $agendamento[
+                                                    'valor_consulta'
+                                                ] !== null
+                                                    ? htmlspecialchars(
+                                                        $agendamento[
+                                                            'valor_consulta'
+                                                        ]
+                                                    )
+                                                    : '' ?>"
+                                                style="
+                                                    width:100px;
+                                                    padding:7px;
+                                                    border:1px solid #ddd;
+                                                    border-radius:8px;
+                                                    margin-bottom:5px;
+                                                "
+                                                required
+                                            >
+
+
+                                            <button
+                                                type="submit"
+                                                class="btn-acao"
+                                                onclick="
+                                                    return confirm(
+                                                        'Marcar esta consulta como paga?'
+                                                    )
+                                                "
+                                            >
+
+                                                🟢 Marcar pago
+
+                                            </button>
+
+
+                                        </form>
+
+
+                                    <?php endif; ?>
 
                                 </td>
+
+
+                                <!-- AÇÃO -->
+
+                                <<td>
+
+    <a
+        href="ver_agendamento.php?id=<?= $agendamento['id'] ?>"
+        class="btn-acao"
+    >
+
+        Ver
+
+    </a>
+
+</td>
 
 
                             </tr>
@@ -1182,6 +1439,7 @@ if ($mesProximo > 12) {
 
 
         <?php endif; ?>
+
 
     </section>
 
