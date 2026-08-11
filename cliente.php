@@ -68,6 +68,55 @@ $stmt->execute([$clienteId]);
 
 $pets = $stmt->fetchAll();
 
+
+// ============================
+// QUANTIDADE DE RECEITAS
+// ============================
+
+$stmt = $pdo->prepare("
+    SELECT COUNT(*)
+    FROM receitas r
+    INNER JOIN pets p
+        ON p.id = r.pet_id
+    WHERE p.cliente_id = ?
+");
+
+$stmt->execute([$clienteId]);
+
+$totalReceitas = (int) $stmt->fetchColumn();
+
+
+// ============================
+// QUANTIDADE DE EXAMES
+// ============================
+
+$stmt = $pdo->prepare("
+    SELECT COUNT(*)
+    FROM exames e
+    INNER JOIN pets p
+        ON p.id = e.pet_id
+    WHERE p.cliente_id = ?
+");
+
+$stmt->execute([$clienteId]);
+
+$totalExames = (int) $stmt->fetchColumn();
+
+
+// ============================
+// QUANTIDADE DE SOLICITAÇÕES
+// ============================
+
+$stmt = $pdo->prepare("
+    SELECT COUNT(*)
+    FROM solicitacoes
+    WHERE cliente_id = ?
+");
+
+$stmt->execute([$clienteId]);
+
+$totalSolicitacoes = (int) $stmt->fetchColumn();
+
 ?>
 
 <!DOCTYPE html>
@@ -101,7 +150,7 @@ $pets = $stmt->fetchAll();
 <header class="painel-topo">
 
     <a
-        href="index.php"
+        href="cliente.php"
         class="logo"
     >
 
@@ -127,16 +176,23 @@ $pets = $stmt->fetchAll();
     <div class="painel-acoes">
 
         <span>
+
             Olá,
+
             <?= htmlspecialchars($clienteNome) ?>
+
             👋
+
         </span>
+
 
         <a
             href="cliente_logout.php"
             class="btn-sair"
         >
+
             🚪 Sair
+
         </a>
 
     </div>
@@ -158,12 +214,16 @@ $pets = $stmt->fetchAll();
             </span>
 
             <h1>
-                Olá, <?= htmlspecialchars($clienteNome) ?>!
+
+                Olá,
+
+                <?= htmlspecialchars($clienteNome) ?>!
+
             </h1>
 
             <p>
-                Aqui você pode acompanhar seus atendimentos
-                com a Dra. Caroline.
+                Acompanhe seus pets, consultas,
+                exames, receitas e solicitações.
             </p>
 
         </div>
@@ -173,16 +233,20 @@ $pets = $stmt->fetchAll();
             href="agenda.php"
             class="btn-principal"
         >
+
             📅 Nova consulta
+
         </a>
 
     </div>
 
 
-    <!-- CARDS -->
+    <!-- RESUMO -->
 
     <section class="dashboard-cards">
 
+
+        <!-- CONSULTAS -->
 
         <div class="dashboard-card">
 
@@ -193,7 +257,7 @@ $pets = $stmt->fetchAll();
             <div>
 
                 <span>
-                    Consultas
+                    Próximas consultas
                 </span>
 
                 <strong>
@@ -204,6 +268,8 @@ $pets = $stmt->fetchAll();
 
         </div>
 
+
+        <!-- PETS -->
 
         <div class="dashboard-card">
 
@@ -226,6 +292,8 @@ $pets = $stmt->fetchAll();
         </div>
 
 
+        <!-- RECEITAS -->
+
         <div class="dashboard-card">
 
             <div class="dashboard-icone">
@@ -239,13 +307,15 @@ $pets = $stmt->fetchAll();
                 </span>
 
                 <strong>
-                    -
+                    <?= $totalReceitas ?>
                 </strong>
 
             </div>
 
         </div>
 
+
+        <!-- EXAMES -->
 
         <div class="dashboard-card">
 
@@ -256,11 +326,34 @@ $pets = $stmt->fetchAll();
             <div>
 
                 <span>
-                    Documentos
+                    Exames
                 </span>
 
                 <strong>
-                    -
+                    <?= $totalExames ?>
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- SOLICITAÇÕES -->
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-icone">
+                📋
+            </div>
+
+            <div>
+
+                <span>
+                    Solicitações
+                </span>
+
+                <strong>
+                    <?= $totalSolicitacoes ?>
                 </strong>
 
             </div>
@@ -342,11 +435,19 @@ $pets = $stmt->fetchAll();
                             <?php
 
                             if ($pet['especie'] === 'Gato') {
+
                                 echo '🐱';
-                            } elseif ($pet['especie'] === 'Cachorro') {
+
+                            } elseif (
+                                $pet['especie'] === 'Cachorro'
+                            ) {
+
                                 echo '🐶';
+
                             } else {
+
                                 echo '🐾';
+
                             }
 
                             ?>
@@ -376,6 +477,7 @@ $pets = $stmt->fetchAll();
                             <?php if ($pet['raca']): ?>
 
                                 ·
+
                                 <?= htmlspecialchars(
                                     $pet['raca']
                                 ) ?>
@@ -390,9 +492,11 @@ $pets = $stmt->fetchAll();
                             <small>
 
                                 ⚖️
+
                                 <?= htmlspecialchars(
                                     $pet['peso']
                                 ) ?>
+
                                 kg
 
                             </small>
@@ -416,17 +520,22 @@ $pets = $stmt->fetchAll();
                             </small>
 
                         <?php endif; ?>
-<a
-    href="pet_cliente.php?id=<?= $pet['id'] ?>"
-    class="btn-acao"
-    style="
-        display:inline-block;
-        margin-top:15px;
-        text-decoration:none;
-    "
->
-    Ver ficha →
-</a>
+
+
+                        <a
+                            href="pet_cliente.php?id=<?= $pet['id'] ?>"
+                            class="btn-acao"
+                            style="
+                                display:inline-block;
+                                margin-top:15px;
+                                text-decoration:none;
+                            "
+                        >
+
+                            Ver ficha →
+
+                        </a>
+
 
                     </div>
 
@@ -487,7 +596,9 @@ $pets = $stmt->fetchAll();
                     href="agenda.php"
                     class="btn-principal"
                 >
+
                     📅 Agendar consulta
+
                 </a>
 
             </div>
@@ -626,84 +737,150 @@ $pets = $stmt->fetchAll();
     </section>
 
 
-    <!-- ACESSOS -->
+    <!-- ACESSOS RÁPIDOS -->
 
-    <section class="dashboard-cards">
+    <section class="painel-secao">
 
 
-        <a
-            href="solicitacoes.php"
-            class="dashboard-card"
-            style="text-decoration:none;"
-        >
+        <div class="secao-topo">
 
-            <div class="dashboard-icone">
-                📋
+            <span>
+                Acesso rápido
+            </span>
+
+            <h2>
+                O que você precisa?
+            </h2>
+
+        </div>
+
+
+        <div class="dashboard-cards">
+
+
+            <a
+                href="#pets"
+                class="dashboard-card"
+                style="text-decoration:none;"
+            >
+
+                <div class="dashboard-icone">
+                    🐾
+                </div>
+
+                <div>
+
+                    <span>
+                        Meus pets
+                    </span>
+
+                    <strong>
+                        Ver pets →
+                    </strong>
+
+                </div>
+
+            </a>
+
+
+            <a
+                href="agenda.php"
+                class="dashboard-card"
+                style="text-decoration:none;"
+            >
+
+                <div class="dashboard-icone">
+                    📅
+                </div>
+
+                <div>
+
+                    <span>
+                        Consultas
+                    </span>
+
+                    <strong>
+                        Agendar →
+                    </strong>
+
+                </div>
+
+            </a>
+
+
+            <div
+                class="dashboard-card"
+                style="text-decoration:none;"
+            >
+
+                <div class="dashboard-icone">
+                    💊
+                </div>
+
+                <div>
+
+                    <span>
+                        Receitas
+                    </span>
+
+                    <strong>
+                        Veja na ficha do pet
+                    </strong>
+
+                </div>
+
             </div>
 
-            <div>
 
-                <span>
-                    Minhas solicitações
-                </span>
+            <div
+                class="dashboard-card"
+                style="text-decoration:none;"
+            >
 
-                <strong>
-                    →
-                </strong>
+                <div class="dashboard-icone">
+                    📎
+                </div>
 
-            </div>
+                <div>
 
-        </a>
+                    <span>
+                        Exames
+                    </span>
 
+                    <strong>
+                        Veja na ficha do pet
+                    </strong>
 
-        <a
-            href="receitas.php"
-            class="dashboard-card"
-            style="text-decoration:none;"
-        >
-
-            <div class="dashboard-icone">
-                💊
-            </div>
-
-            <div>
-
-                <span>
-                    Minhas receitas
-                </span>
-
-                <strong>
-                    →
-                </strong>
+                </div>
 
             </div>
 
-        </a>
 
+            <div
+                class="dashboard-card"
+                style="text-decoration:none;"
+            >
 
-        <a
-            href="documentos.php"
-            class="dashboard-card"
-            style="text-decoration:none;"
-        >
+                <div class="dashboard-icone">
+                    📋
+                </div>
 
-            <div class="dashboard-icone">
-                📎
+                <div>
+
+                    <span>
+                        Solicitações
+                    </span>
+
+                    <strong>
+                        Veja na ficha do pet
+                    </strong>
+
+                </div>
+
             </div>
 
-            <div>
 
-                <span>
-                    Meus exames
-                </span>
-
-                <strong>
-                    →
-                </strong>
-
-            </div>
-
-        </a>
+        </div>
 
 
     </section>
