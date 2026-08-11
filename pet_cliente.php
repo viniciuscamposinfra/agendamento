@@ -45,7 +45,6 @@ $stmt->execute([
 
 $pet = $stmt->fetch();
 
-
 if (!$pet) {
     die('Pet não encontrado.');
 }
@@ -97,6 +96,7 @@ $stmt->execute([$petId]);
 
 $exames = $stmt->fetchAll();
 
+
 /*
     BUSCAR RECEITAS
 */
@@ -117,6 +117,34 @@ $stmt = $pdo->prepare("
 $stmt->execute([$petId]);
 
 $receitas = $stmt->fetchAll();
+
+
+/*
+    BUSCAR SOLICITAÇÕES
+*/
+
+$stmt = $pdo->prepare("
+    SELECT
+        id,
+        tipo,
+        descricao,
+        resposta,
+        status,
+        criado_em,
+        atualizado_em
+    FROM solicitacoes
+    WHERE pet_id = ?
+      AND cliente_id = ?
+    ORDER BY criado_em DESC, id DESC
+");
+
+$stmt->execute([
+    $petId,
+    $clienteId
+]);
+
+$solicitacoes = $stmt->fetchAll();
+
 
 /*
     ÍCONE DO PET
@@ -530,7 +558,6 @@ if ($pet['especie'] === 'Gato') {
 
     <section class="painel-secao">
 
-
         <div class="secao-topo">
 
             <span>
@@ -925,90 +952,138 @@ if ($pet['especie'] === 'Gato') {
 
     <!-- RECEITAS -->
 
-<section class="painel-secao">
+    <section class="painel-secao">
 
-    <div class="secao-topo">
+        <div class="secao-topo">
 
-        <span>
-            Prescrições
-        </span>
+            <span>
+                Prescrições
+            </span>
 
-        <h2>
-            Receitas
-        </h2>
-
-        <p>
-            Receitas disponibilizadas pela Dra. Caroline.
-        </p>
-
-    </div>
-
-
-    <?php if (!$receitas): ?>
-
-        <div class="sem-agendamentos">
-
-            <div>
-                💊
-            </div>
-
-            <h3>
-                Nenhuma receita disponível
-            </h3>
+            <h2>
+                Receitas
+            </h2>
 
             <p>
-                Ainda não existem receitas disponibilizadas
-                para este pet.
+                Receitas disponibilizadas pela Dra. Caroline.
             </p>
 
         </div>
 
 
-    <?php else: ?>
+        <?php if (!$receitas): ?>
 
 
-        <?php foreach ($receitas as $receita): ?>
+            <div class="sem-agendamentos">
 
-            <div
-                style="
-                    background:#fff;
-                    border:1px solid #eee;
-                    border-radius:14px;
-                    padding:20px;
-                    margin-bottom:15px;
-                "
-            >
+                <div>
+                    💊
+                </div>
+
+                <h3>
+                    Nenhuma receita disponível
+                </h3>
+
+                <p>
+                    Ainda não existem receitas disponibilizadas
+                    para este pet.
+                </p>
+
+            </div>
+
+
+        <?php else: ?>
+
+
+            <?php foreach ($receitas as $receita): ?>
+
 
                 <div
                     style="
-                        display:flex;
-                        justify-content:space-between;
-                        align-items:center;
-                        gap:20px;
+                        background:#fff;
+                        border:1px solid #eee;
+                        border-radius:14px;
+                        padding:20px;
+                        margin-bottom:15px;
                     "
                 >
 
-                    <div>
+                    <div
+                        style="
+                            display:flex;
+                            justify-content:space-between;
+                            align-items:center;
+                            gap:20px;
+                        "
+                    >
 
-                        <h3 style="margin-top:0;">
+                        <div>
 
-                            💊
+                            <h3 style="margin-top:0;">
 
-                            <?= htmlspecialchars(
-                                $receita['titulo']
-                            ) ?>
+                                💊
 
-                        </h3>
+                                <?= htmlspecialchars(
+                                    $receita['titulo']
+                                ) ?>
 
+                            </h3>
+
+
+                            <p>
+
+                                📅
+
+                                <?= date(
+                                    'd/m/Y',
+                                    strtotime(
+                                        $receita['data_receita']
+                                    )
+                                ) ?>
+
+                            </p>
+
+                        </div>
+
+
+                        <?php if (
+                            !empty(
+                                $receita['arquivo_pdf']
+                            )
+                        ): ?>
+
+                            <a
+                                href="uploads/receitas/<?= rawurlencode(
+                                    $receita['arquivo_pdf']
+                                ) ?>"
+                                target="_blank"
+                                class="btn-acao"
+                            >
+                                Visualizar PDF
+                            </a>
+
+                        <?php endif; ?>
+
+                    </div>
+
+
+                    <div
+                        style="
+                            margin-top:15px;
+                            padding-top:15px;
+                            border-top:1px solid #eee;
+                        "
+                    >
+
+                        <strong>
+                            Medicamentos e instruções
+                        </strong>
 
                         <p>
 
-                            📅
-
-                            <?= date(
-                                'd/m/Y',
-                                strtotime(
-                                    $receita['data_receita']
+                            <?= nl2br(
+                                htmlspecialchars(
+                                    $receita['medicamentos']
                                 )
                             ) ?>
 
@@ -1019,71 +1094,214 @@ if ($pet['especie'] === 'Gato') {
 
                     <?php if (
                         !empty(
-                            $receita['arquivo_pdf']
+                            $receita['observacoes']
                         )
                     ): ?>
 
-                        <a
-                            href="uploads/receitas/<?= rawurlencode(
-                                $receita['arquivo_pdf']
-                            ) ?>"
-                            target="_blank"
-                            class="btn-acao"
+                        <div
+                            style="
+                                margin-top:15px;
+                            "
                         >
-                            Visualizar PDF
-                        </a>
+
+                            <strong>
+                                Orientações
+                            </strong>
+
+                            <p>
+
+                                <?= nl2br(
+                                    htmlspecialchars(
+                                        $receita['observacoes']
+                                    )
+                                ) ?>
+
+                            </p>
+
+                        </div>
 
                     <?php endif; ?>
 
+
                 </div>
+
+
+            <?php endforeach; ?>
+
+
+        <?php endif; ?>
+
+
+    </section>
+
+
+    <!-- SOLICITAÇÕES -->
+
+    <section class="painel-secao">
+
+        <div class="secao-topo">
+
+            <span>
+                Atendimento
+            </span>
+
+            <h2>
+                Minhas solicitações
+            </h2>
+
+            <p>
+                Acompanhe suas solicitações e as respostas
+                da Dra. Caroline.
+            </p>
+
+        </div>
+
+
+        <div style="margin-bottom:20px;">
+
+            <a
+                href="solicitacao.php?pet_id=<?= $petId ?>"
+                class="btn-principal"
+            >
+                Nova solicitação
+            </a>
+
+        </div>
+
+
+        <?php if (!$solicitacoes): ?>
+
+
+            <div class="sem-agendamentos">
+
+                <div>
+                    📋
+                </div>
+
+                <h3>
+                    Nenhuma solicitação
+                </h3>
+
+                <p>
+                    Você ainda não enviou nenhuma solicitação
+                    para este pet.
+                </p>
+
+            </div>
+
+
+        <?php else: ?>
+
+
+            <?php foreach ($solicitacoes as $solicitacao): ?>
+
+
+                <?php
+
+                if (
+                    $solicitacao['status'] === 'pendente'
+                ) {
+
+                    $statusTexto = 'Pendente';
+                    $statusIcone = '🟡';
+
+                } elseif (
+                    $solicitacao['status'] === 'em_andamento'
+                ) {
+
+                    $statusTexto = 'Em andamento';
+                    $statusIcone = '🔵';
+
+                } elseif (
+                    $solicitacao['status'] === 'concluida'
+                ) {
+
+                    $statusTexto = 'Concluída';
+                    $statusIcone = '🟢';
+
+                } else {
+
+                    $statusTexto = 'Cancelada';
+                    $statusIcone = '🔴';
+
+                }
+
+                ?>
 
 
                 <div
                     style="
-                        margin-top:15px;
-                        padding-top:15px;
-                        border-top:1px solid #eee;
+                        background:#fff;
+                        border:1px solid #eee;
+                        border-radius:14px;
+                        padding:20px;
+                        margin-bottom:15px;
                     "
                 >
 
-                    <strong>
-                        Medicamentos e instruções
-                    </strong>
-
-                    <p>
-
-                        <?= nl2br(
-                            htmlspecialchars(
-                                $receita['medicamentos']
-                            )
-                        ) ?>
-
-                    </p>
-
-                </div>
-
-
-                <?php if (
-                    !empty(
-                        $receita['observacoes']
-                    )
-                ): ?>
 
                     <div
                         style="
-                            margin-top:15px;
+                            display:flex;
+                            justify-content:space-between;
+                            align-items:flex-start;
+                            gap:20px;
                         "
                     >
 
+                        <div>
+
+                            <h3 style="margin-top:0;">
+
+                                <?= htmlspecialchars(
+                                    $solicitacao['tipo']
+                                ) ?>
+
+                            </h3>
+
+                            <p
+                                style="
+                                    font-size:12px;
+                                    color:#888;
+                                "
+                            >
+
+                                Enviada em:
+
+                                <?= date(
+                                    'd/m/Y H:i',
+                                    strtotime(
+                                        $solicitacao['criado_em']
+                                    )
+                                ) ?>
+
+                            </p>
+
+                        </div>
+
+
                         <strong>
-                            Orientações
+
+                            <?= $statusIcone ?>
+
+                            <?= $statusTexto ?>
+
+                        </strong>
+
+                    </div>
+
+
+                    <div style="margin-top:15px;">
+
+                        <strong>
+                            Sua solicitação
                         </strong>
 
                         <p>
 
                             <?= nl2br(
                                 htmlspecialchars(
-                                    $receita['observacoes']
+                                    $solicitacao['descricao']
                                 )
                             ) ?>
 
@@ -1091,18 +1309,70 @@ if ($pet['especie'] === 'Gato') {
 
                     </div>
 
-                <?php endif; ?>
+
+                    <?php if (
+                        !empty(
+                            $solicitacao['resposta']
+                        )
+                    ): ?>
 
 
-            </div>
+                        <div
+                            style="
+                                margin-top:20px;
+                                padding:15px;
+                                background:#f7f7f7;
+                                border-radius:10px;
+                                border-left:4px solid #ddd;
+                            "
+                        >
 
-        <?php endforeach; ?>
+                            <strong>
+                                Resposta da Dra. Caroline
+                            </strong>
+
+                            <p>
+
+                                <?= nl2br(
+                                    htmlspecialchars(
+                                        $solicitacao['resposta']
+                                    )
+                                ) ?>
+
+                            </p>
+
+                        </div>
 
 
-    <?php endif; ?>
+                    <?php else: ?>
 
 
-</section>
+                        <p
+                            style="
+                                margin-top:20px;
+                                color:#888;
+                            "
+                        >
+
+                            Aguardando resposta da
+                            Dra. Caroline.
+
+                        </p>
+
+
+                    <?php endif; ?>
+
+
+                </div>
+
+
+            <?php endforeach; ?>
+
+
+        <?php endif; ?>
+
+
+    </section>
 
 
 </main>
