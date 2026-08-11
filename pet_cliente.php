@@ -77,6 +77,28 @@ $historicos = $stmt->fetchAll();
 
 
 /*
+    BUSCAR EXAMES
+*/
+
+$stmt = $pdo->prepare("
+    SELECT
+        id,
+        titulo,
+        descricao,
+        data_exame,
+        arquivo,
+        tipo_arquivo
+    FROM exames
+    WHERE pet_id = ?
+    ORDER BY data_exame DESC, id DESC
+");
+
+$stmt->execute([$petId]);
+
+$exames = $stmt->fetchAll();
+
+
+/*
     ÍCONE DO PET
 */
 
@@ -745,6 +767,142 @@ if ($pet['especie'] === 'Gato') {
     </section>
 
 
+    <!-- EXAMES -->
+
+    <section class="painel-secao">
+
+        <div class="secao-topo">
+
+            <span>
+                📎 Documentos
+            </span>
+
+            <h2>
+                Exames e documentos
+            </h2>
+
+            <p>
+                Exames e documentos disponibilizados
+                pela Dra. Caroline.
+            </p>
+
+        </div>
+
+
+        <?php if (!$exames): ?>
+
+
+            <div class="sem-agendamentos">
+
+                <div>
+                    📎
+                </div>
+
+                <h3>
+                    Nenhum exame disponível
+                </h3>
+
+                <p>
+                    Ainda não existem exames disponibilizados
+                    para este pet.
+                </p>
+
+            </div>
+
+
+        <?php else: ?>
+
+
+            <?php foreach ($exames as $exame): ?>
+
+
+                <div
+                    style="
+                        background:#fff;
+                        border:1px solid #eee;
+                        border-radius:14px;
+                        padding:20px;
+                        margin-bottom:15px;
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:center;
+                        gap:20px;
+                    "
+                >
+
+
+                    <div>
+
+                        <h3 style="margin-top:0;">
+
+                            📄
+
+                            <?= htmlspecialchars(
+                                $exame['titulo']
+                            ) ?>
+
+                        </h3>
+
+
+                        <?php if ($exame['data_exame']): ?>
+
+                            <p>
+
+                                📅
+
+                                <?= date(
+                                    'd/m/Y',
+                                    strtotime(
+                                        $exame['data_exame']
+                                    )
+                                ) ?>
+
+                            </p>
+
+                        <?php endif; ?>
+
+
+                        <?php if ($exame['descricao']): ?>
+
+                            <p>
+
+                                <?= nl2br(
+                                    htmlspecialchars(
+                                        $exame['descricao']
+                                    )
+                                ) ?>
+
+                            </p>
+
+                        <?php endif; ?>
+
+
+                    </div>
+
+
+                    <a
+                        href="uploads/exames/<?= rawurlencode(
+                            $exame['arquivo']
+                        ) ?>"
+                        target="_blank"
+                        class="btn-acao"
+                    >
+                        👁 Visualizar
+                    </a>
+
+
+                </div>
+
+
+            <?php endforeach; ?>
+
+
+        <?php endif; ?>
+
+
+    </section>
+
+
     <!-- PRÓXIMOS MÓDULOS -->
 
     <section class="dashboard-cards">
@@ -763,7 +921,7 @@ if ($pet['especie'] === 'Gato') {
                 </span>
 
                 <strong>
-                    Em breve
+                    Disponível acima
                 </strong>
 
             </div>
