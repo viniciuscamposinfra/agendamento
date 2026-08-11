@@ -4,22 +4,18 @@ require_once 'config.php';
 
 session_start();
 
-
-// Verifica login do cliente
-
 if (!isset($_SESSION['cliente_id'])) {
-
     header('Location: cliente_login.php');
     exit;
-
 }
 
-
-$clienteId = $_SESSION['cliente_id'];
+$clienteId = (int) $_SESSION['cliente_id'];
 $clienteNome = $_SESSION['cliente_nome'];
 
 
-// Próximas consultas
+// ============================
+// PRÓXIMAS CONSULTAS
+// ============================
 
 $stmt = $pdo->prepare("
     SELECT
@@ -34,7 +30,11 @@ $stmt = $pdo->prepare("
     FROM agendamentos
     WHERE nome_tutor = ?
       AND data_consulta >= CURDATE()
-      AND status IN ('pendente', 'aprovado', 'reagendamento')
+      AND status IN (
+          'pendente',
+          'aprovado',
+          'reagendamento'
+      )
     ORDER BY data_consulta ASC, horario_consulta ASC
     LIMIT 5
 ");
@@ -42,6 +42,31 @@ $stmt = $pdo->prepare("
 $stmt->execute([$clienteNome]);
 
 $consultas = $stmt->fetchAll();
+
+
+// ============================
+// PETS DO CLIENTE
+// ============================
+
+$stmt = $pdo->prepare("
+    SELECT
+        id,
+        nome,
+        especie,
+        raca,
+        sexo,
+        data_nascimento,
+        peso,
+        alergias,
+        observacoes
+    FROM pets
+    WHERE cliente_id = ?
+    ORDER BY nome ASC
+");
+
+$stmt->execute([$clienteId]);
+
+$pets = $stmt->fetchAll();
 
 ?>
 
@@ -193,7 +218,7 @@ $consultas = $stmt->fetchAll();
                 </span>
 
                 <strong>
-                    -
+                    <?= count($pets) ?>
                 </strong>
 
             </div>
@@ -241,6 +266,178 @@ $consultas = $stmt->fetchAll();
             </div>
 
         </div>
+
+
+    </section>
+
+
+    <!-- MEUS PETS -->
+
+    <section class="painel-secao">
+
+
+        <div class="secao-topo">
+
+            <span>
+                🐾 Meus animais
+            </span>
+
+            <h2>
+                Meus pets
+            </h2>
+
+            <p>
+                Animais vinculados à sua conta.
+            </p>
+
+        </div>
+
+
+        <?php if (!$pets): ?>
+
+
+            <div class="sem-agendamentos">
+
+                <div>
+                    🐶
+                </div>
+
+                <h3>
+                    Nenhum pet cadastrado
+                </h3>
+
+                <p>
+                    Seus pets aparecerão aqui quando forem
+                    cadastrados pela Dra. Caroline.
+                </p>
+
+            </div>
+
+
+        <?php else: ?>
+
+
+            <div class="dashboard-cards">
+
+
+                <?php foreach ($pets as $pet): ?>
+
+
+                    <div
+                        class="dashboard-card"
+                        style="
+                            display:block;
+                            text-decoration:none;
+                        "
+                    >
+
+
+                        <div
+                            style="
+                                font-size:40px;
+                                margin-bottom:10px;
+                            "
+                        >
+
+                            <?php
+
+                            if ($pet['especie'] === 'Gato') {
+                                echo '🐱';
+                            } elseif ($pet['especie'] === 'Cachorro') {
+                                echo '🐶';
+                            } else {
+                                echo '🐾';
+                            }
+
+                            ?>
+
+                        </div>
+
+
+                        <h3
+                            style="
+                                margin:0 0 8px;
+                            "
+                        >
+
+                            <?= htmlspecialchars(
+                                $pet['nome']
+                            ) ?>
+
+                        </h3>
+
+
+                        <p>
+
+                            <?= htmlspecialchars(
+                                $pet['especie']
+                            ) ?>
+
+                            <?php if ($pet['raca']): ?>
+
+                                ·
+                                <?= htmlspecialchars(
+                                    $pet['raca']
+                                ) ?>
+
+                            <?php endif; ?>
+
+                        </p>
+
+
+                        <?php if ($pet['peso']): ?>
+
+                            <small>
+
+                                ⚖️
+                                <?= htmlspecialchars(
+                                    $pet['peso']
+                                ) ?>
+                                kg
+
+                            </small>
+
+                        <?php endif; ?>
+
+
+                        <?php if ($pet['sexo']): ?>
+
+                            <small
+                                style="
+                                    display:block;
+                                    margin-top:5px;
+                                "
+                            >
+
+                                <?= $pet['sexo'] === 'Macho'
+                                    ? '♂ Macho'
+                                    : '♀ Fêmea' ?>
+
+                            </small>
+
+                        <?php endif; ?>
+<a
+    href="pet_cliente.php?id=<?= $pet['id'] ?>"
+    class="btn-acao"
+    style="
+        display:inline-block;
+        margin-top:15px;
+        text-decoration:none;
+    "
+>
+    Ver ficha →
+</a>
+
+                    </div>
+
+
+                <?php endforeach; ?>
+
+
+            </div>
+
+
+        <?php endif; ?>
 
 
     </section>
@@ -338,7 +535,6 @@ $consultas = $stmt->fetchAll();
 
                             <tr>
 
-
                                 <td>
 
                                     🐾
@@ -379,10 +575,10 @@ $consultas = $stmt->fetchAll();
 
                                 <td>
 
-
                                     <?php
 
-                                    $status = [
+                                    $statusTexto = [
+
                                         'pendente'
                                             => '🟡 Aguardando confirmação',
 
@@ -391,6 +587,7 @@ $consultas = $stmt->fetchAll();
 
                                         'reagendamento'
                                             => '🔄 Novo horário'
+
                                     ];
 
                                     ?>
@@ -402,15 +599,13 @@ $consultas = $stmt->fetchAll();
                                         ) ?>"
                                     >
 
-                                        <?= $status[
+                                        <?= $statusTexto[
                                             $consulta['status']
                                         ] ?? $consulta['status'] ?>
 
                                     </span>
 
-
                                 </td>
-
 
                             </tr>
 
